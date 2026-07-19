@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المالي المركب الاحترافي</title>
+    <title>نظام IMSG المالي المحترف</title>
     <style>
         :root {
             --primary: #1F4E79;
@@ -31,7 +31,8 @@
         .btn-primary { background-color: var(--primary); }
         .btn-success { background-color: var(--success); }
         .btn-danger { background-color: var(--danger); }
-        .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+        .btn-sm { padding: 4px 8px; font-size: 0.8rem; margin: 2px; }
+        .btn-warning { background-color: #f39c12; color: white; }
         .btn-pdf { background-color: #e67e22; color: white; }
         
         .row-grid { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
@@ -49,25 +50,25 @@
         .tab-content.active { display: block; }
         .balance-box { display: flex; justify-content: space-between; background: var(--bg); padding: 10px; border-radius: 5px; font-weight: bold; margin-top: 10px; margin-bottom: 10px; }
         
-        /* تكييف الطباعة وتصدير PDF لنظافة الملف */
+        /* تكييف الـ PDF والطباعة الرسمية لشركة IMSG */
         @media print {
             body { background: white; color: black; padding-bottom: 0; }
             .nav-tabs, header, .btn, .form-group, .balance-box { display: none !important; }
             .card { box-shadow: none; padding: 0; margin: 0; }
             .container { max-width: 100%; padding: 0; }
             table { font-size: 10pt; width: 100%; }
-            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 25px; border-bottom: 3px double #000; padding-bottom: 15px; }
         }
         .print-header { display: none; }
     </style>
 </head>
 <body>
 
-<header id="app-title">إدخال قيد يومية مركب شريان</header>
+<header id="app-title">إدخال قيد مالى مركب</header>
 
 <div class="container">
     
-    <!-- 1. شاشة الإدخال المركب بالكامل -->
+    <!-- 1. شاشة الإدخال المركب -->
     <div id="input-tab" class="tab-content active">
         <div class="card">
             <h3>تسجيل قيد مالى متوازن</h3>
@@ -82,19 +83,15 @@
             
             <!-- الحسابات المدينة المتعددة -->
             <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 12px; background: #f6fbf8;">
-                <label style="font-weight: bold; color: var(--success);">الحسابات المدينة (من مذكورين / الزيادة +)</label>
-                <div id="debit-accounts-container">
-                    <!-- الحسابات المدينة ديناميكياً -->
-                </div>
+                <label style="font-weight: bold; color: var(--success);">الحسابات المدينة (الزيادة +)</label>
+                <div id="debit-accounts-container"></div>
                 <button class="btn btn-success btn-sm" type="button" onclick="addDebitRow()">إضافة حساب مدين آخر ➕</button>
             </div>
 
             <!-- الحسابات الدائنة المتعددة -->
             <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #fff5f5; margin-bottom: 12px;">
-                <label style="font-weight: bold; color: var(--danger);">الحسابات الدائنة (إلى مذكورين / النقصان -)</label>
-                <div id="credit-accounts-container">
-                    <!-- الحسابات الدائنة ديناميكياً -->
-                </div>
+                <label style="font-weight: bold; color: var(--danger);">الحسابات الدائنة (النقصان -)</label>
+                <div id="credit-accounts-container"></div>
                 <button class="btn btn-danger btn-sm" type="button" onclick="addCreditRow()">إضافة حساب دائن آخر ➕</button>
             </div>
 
@@ -119,46 +116,77 @@
         </div>
     </div>
 
-    <!-- 2. شاشة دليل الحسابات -->
+    <!-- 2. شاشة دليل الحسابات المطور -->
     <div id="chart-tab" class="tab-content">
         <div class="card">
-            <h3>إضافة حساب جديد</h3>
+            <h3>إضافة / تعديل حساب</h3>
+            <input type="hidden" id="edit-account-index" value="">
             <div class="form-group">
-                <input type="text" id="new-account-name" class="form-control" placeholder="اسم الحساب (العميل أو الصندوق)">
+                <label>اسم الحساب</label>
+                <input type="text" id="new-account-name" class="form-control" placeholder="مثال: الصندوق، العميل أحمد">
             </div>
-            <button class="btn btn-success btn-block" onclick="createAccount()">إضافة للحسابات ➕</button>
+            <div class="form-group">
+                <label>نوع الحساب</label>
+                <select id="new-account-type" class="form-control">
+                    <option value="أصول">أصول (صندوق، بنك، عملاء)</option>
+                    <option value="خصوم">خصوم (موردين، قروض)</option>
+                    <option value="حقوق ملكية">حقوق ملكية (رأس المال)</option>
+                    <option value="إيرادات">إيرادات (مبيعات، أرباح)</option>
+                    <option value="مصروفات">مصروفات (إيجار، رواتب، مشتريات)</option>
+                </select>
+            </div>
+            <button id="btn-save-account" class="btn btn-success btn-block" onclick="createOrUpdateAccount()">حفظ الحساب ➕</button>
+            <button id="btn-cancel-edit" class="btn btn-secondary btn-block" style="display:none; background:#7f8c8d;" onclick="clearAccountForm()">إلغاء التعديل</button>
         </div>
+        
         <div class="card">
-            <h3>قائمة الحسابات</h3>
+            <h3>دليل الحسابات المصنف</h3>
             <table id="accounts-table">
-                <thead><tr><th>اسم الحساب</th><th>إجراء</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>اسم الحساب</th>
+                        <th>النوع</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
                 <tbody></tbody>
             </table>
         </div>
     </div>
 
-    <!-- 3. شاشة التقارير والنسخ الاحتياطي اللمسي -->
+    <!-- 3. شاشة التقارير مع ميزة فلترة الأرصدة -->
     <div id="report-tab" class="tab-content">
         <div class="card">
             <h3>ملخص أرصدة الحسابات الإجمالي</h3>
+            <div class="form-group">
+                <label>تصفية الأرصدة حسب النوع:</label>
+                <select id="report-type-filter" class="form-control" onchange="loadReports()">
+                    <option value="الكل">عرض كل أنواع الحسابات</option>
+                    <option value="أصول">أصول فقط</option>
+                    <option value="خصوم">خصوم فقط</option>
+                    <option value="حقوق ملكية">حقوق ملكية فقط</option>
+                    <option value="إيرادات">إيرادات فقط</option>
+                    <option value="مصروفات">مصروفات فقط</option>
+                </select>
+            </div>
             <table id="reports-table">
-                <thead><tr><th>الحساب</th><th>الرصيد النهائي</th></tr></thead>
+                <thead><tr><th>الحساب</th><th>النوع</th><th>الرصيد النهائي</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
         
         <div class="card">
-            <h3>النسخ الاحتياطي الذكي لجوالك</h3>
+            <h3>النسخ الاحتياطي الذكي</h3>
             <button class="btn btn-primary btn-block" onclick="copyBackupCode()">📋 اضغط لنسخ كود البيانات الاحتياطي</button>
             <hr style="margin:15px 0; border:0; border-top:1px solid #ddd;">
             <div class="form-group">
-                <textarea id="restore-code-area" class="form-control" rows="3" placeholder="الصق الكود الاحتياطي هنا للاسترداد..."></textarea>
+                <textarea id="restore-code-area" class="form-control" rows="3" placeholder="الصق كود الاسترداد هنا..."></textarea>
             </div>
             <button class="btn btn-danger btn-block" onclick="processRestoreCode()">📥 استرداد النسخة الآن</button>
         </div>
     </div>
 
-    <!-- 4. شاشة كشف الحساب وتصدير PDF المباشر -->
+    <!-- 4. شاشة كشف الحساب وتصدير PDF باسم IMSG والتاريخ الميلادي -->
     <div id="statement-tab" class="tab-content">
         <div class="card">
             <h3>كشف حساب حركي تفصيلي</h3>
@@ -166,25 +194,26 @@
                 <select id="statement-filter" class="form-control" onchange="loadStatement()"></select>
             </div>
             
-            <button class="btn btn-pdf btn-block" onclick="exportToPDF()">🖨️ تصدير وحفظ كشف الحساب PDF</button>
+            <button class="btn btn-pdf btn-block" onclick="exportToPDF()">🖨️ تصدير وإرسال كشف الحساب PDF</button>
 
-            <div class="balance-box" id="balance-box-view">
+            <div class="balance-box">
                 <span>صافي الرصيد الحالي:</span>
                 <span id="statement-final-balance">0.00</span>
             </div>
             
-            <!-- رأس ترويسة مخفي مخصص للظهور في الـ PDF المطبوع فقط -->
-            <div class="print-header" id="pdf-header">
-                <h2 id="pdf-title">كشف حساب تفصيلي</h2>
+            <!-- ترويسة الـ PDF الرسمية لشركة IMSG والتاريخ الميلادي المعياري -->
+            <div class="print-header">
+                <h2>شركة IMSG للمقاولات والتجارة</h2>
+                <h4 style="margin: 5px 0; color: #555;">تقرير كشف حساب تفصيلي حركي</h4>
                 <p id="pdf-date-print"></p>
-                <h3 id="pdf-acc-name"></h3>
+                <div style="margin-top:10px; font-weight: bold; font-size:1.1rem;" id="pdf-acc-name"></div>
             </div>
 
             <div style="overflow-x: auto;">
                 <table id="statement-table">
                     <thead>
                         <tr>
-                            <th>التاريخ</th>
+                            <th>التاريخ الميلادي</th>
                             <th>البيان</th>
                             <th>مدين (+)</th>
                             <th>دائن (-)</th>
@@ -207,15 +236,22 @@
 </nav>
 
 <script>
-    let defaultAccounts = ["ابو محمد", "صندوق المركز الرئيسي", "صندوق كاشير 1", "المورد أحمد"];
-    let accounts = JSON.parse(localStorage.getItem('fin_v3_accounts')) || defaultAccounts;
-    let transactions = JSON.parse(localStorage.getItem('fin_v3_txs')) || [];
+    // الحسابات الافتراضية مع أنواعها المهيكلة
+    let defaultAccounts = [
+        { name: "ابو محمد", type: "أصول" },
+        { name: "صندوق المركز الرئيسي", type: "أصول" },
+        { name: "المورد أحمد", type: "خصوم" },
+        { name: "مصروف الإيجار", type: "مصروفات" }
+    ];
+    
+    let accounts = JSON.parse(localStorage.getItem('fin_v4_accounts')) || defaultAccounts;
+    let transactions = JSON.parse(localStorage.getItem('fin_v4_txs')) || [];
 
     document.getElementById('tx-date').valueAsDate = new Date();
 
     function saveToStorage() {
-        localStorage.setItem('fin_v3_accounts', JSON.stringify(accounts));
-        localStorage.setItem('fin_v3_txs', JSON.stringify(transactions));
+        localStorage.setItem('fin_v4_accounts', JSON.stringify(accounts));
+        localStorage.setItem('fin_v4_txs', JSON.stringify(transactions));
         loadDropdowns();
         loadAllTransactionsList();
     }
@@ -237,13 +273,13 @@
         let filterSel = document.getElementById('statement-filter');
         if(filterSel) {
             let cur = filterSel.value;
-            filterSel.innerHTML = accounts.map(a => `<option value="${a}">${a}</option>`).join('');
-            if(cur && accounts.includes(cur)) filterSel.value = cur;
+            filterSel.innerHTML = accounts.map(a => `<option value="${a.name}">${a.name} (${a.type})</option>`).join('');
+            if(cur && accounts.some(a => a.name === cur)) filterSel.value = cur;
         }
         document.querySelectorAll('.debit-account-select, .credit-account-select').forEach(sel => {
             let cur = sel.value;
-            sel.innerHTML = accounts.map(a => `<option value="${a}">${a}</option>`).join('');
-            if(cur && accounts.includes(cur)) sel.value = cur;
+            sel.innerHTML = accounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+            if(cur && accounts.some(a => a.name === cur)) sel.value = cur;
         });
     }
 
@@ -273,22 +309,89 @@
         loadDropdowns();
     }
 
+    function createOrUpdateAccount() {
+        let name = document.getElementById('new-account-name').value.trim();
+        let type = document.getElementById('new-account-type').value;
+        let editIdx = document.getElementById('edit-account-index').value;
+
+        if(!name) return alert('الرجاء كتابة اسم الحساب');
+
+        if(editIdx === "") {
+            // إضافة حساب جديد
+            if(accounts.some(a => a.name === name)) return alert('اسم الحساب هذا موجود مسبقاً!');
+            accounts.push({ name, type });
+        } else {
+            // تعديل الحساب القائم وتحديث الاسم في المعاملات السابقة لكي لا تضيع التقارير
+            let oldName = accounts[editIdx].name;
+            
+            transactions.forEach(tx => {
+                tx.debits.forEach(d => { if(d.account === oldName) d.account = name; });
+                tx.credits.forEach(c => { if(c.account === oldName) c.account = name; });
+            });
+
+            accounts[editIdx] = { name, type };
+        }
+
+        clearAccountForm();
+        saveToStorage();
+        loadChartOfAccounts();
+    }
+
+    function editAccount(index) {
+        let acc = accounts[index];
+        document.getElementById('new-account-name').value = acc.name;
+        document.getElementById('new-account-type').value = acc.type;
+        document.getElementById('edit-account-index').value = index;
+        
+        document.getElementById('btn-save-account').innerText = "تحديث بيانات الحساب 💾";
+        document.getElementById('btn-cancel-edit').style.display = "block";
+    }
+
+    function clearAccountForm() {
+        document.getElementById('new-account-name').value = "";
+        document.getElementById('edit-account-index').value = "";
+        document.getElementById('btn-save-account').innerText = "حفظ الحساب ➕";
+        document.getElementById('btn-cancel-edit').style.display = "none";
+    }
+
+    function loadChartOfAccounts() {
+        let tbody = document.getElementById('accounts-table').querySelector('tbody');
+        tbody.innerHTML = accounts.map((a, i) => `
+            <tr>
+                <td><b>${a.name}</b></td>
+                <td><span style="color:var(--primary); font-weight:600;">${a.type}</span></td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editAccount(${i})">تعديل ✏️</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAccount('${a.name}')">حذف ❌</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function deleteAccount(name) {
+        let hasTx = transactions.some(t => t.debits.some(d => d.account === name) || t.credits.some(c => c.account === name));
+        if(hasTx) return alert('لا يمكن الحذف لارتباط عمليات مالية مسجلة بهذا الحساب!');
+        if(confirm(`هل تريد بالتأكيد إزالة حساب [${name}]؟`)) { 
+            accounts = accounts.filter(a => a.name !== name); 
+            saveToStorage(); 
+            loadChartOfAccounts(); 
+        }
+    }
+
     function saveFullyCompoundTransaction() {
         let date = document.getElementById('tx-date').value;
         let desc = document.getElementById('tx-desc').value.trim();
 
         if(!date || !desc) return alert('الرجاء كتابة التاريخ والبيان العام للقيد!');
 
-        let debits = [];
-        let totalDebit = 0;
+        let debits = []; let totalDebit = 0;
         document.querySelectorAll('.debit-row').forEach(row => {
             let acc = row.querySelector('.debit-account-select').value;
             let amt = parseFloat(row.querySelector('.debit-amount-input').value);
             if(acc && !isNaN(amt)) { debits.push({ account: acc, amount: amt }); totalDebit += amt; }
         });
 
-        let credits = [];
-        let totalCredit = 0;
+        let credits = []; let totalCredit = 0;
         document.querySelectorAll('.credit-row').forEach(row => {
             let acc = row.querySelector('.credit-account-select').value;
             let amt = parseFloat(row.querySelector('.credit-amount-input').value);
@@ -334,26 +437,8 @@
         if(confirm('هل تريد حذف هذا القيد بكافة توزيعاته؟')) { transactions = transactions.filter(t => t.id !== id); saveToStorage(); }
     }
 
-    function createAccount() {
-        let name = document.getElementById('new-account-name').value.trim();
-        if(!name) return;
-        if(accounts.includes(name)) return alert('الحساب موجود بالفعل');
-        accounts.push(name); document.getElementById('new-account-name').value = ''; saveToStorage(); loadChartOfAccounts();
-    }
-
-    function loadChartOfAccounts() {
-        let tbody = document.getElementById('accounts-table').querySelector('tbody');
-        tbody.innerHTML = accounts.map(a => `<tr><td>${a}</td><td><button class="btn btn-danger btn-sm" onclick="deleteAccount('${a}')">حذف ❌</button></td></tr>`).join('');
-    }
-
-    function deleteAccount(name) {
-        let hasTx = transactions.some(t => t.debits.some(d => d.account === name) || t.credits.some(c => c.account === name));
-        if(hasTx) return alert('لا يمكن الحذف لارتباط عمليات مالية بالحساب!');
-        if(confirm(`حذف ${name}؟`)) { accounts = accounts.filter(a => a !== name); saveToStorage(); loadChartOfAccounts(); }
-    }
-
     function calculateBalances() {
-        let bal = {}; accounts.forEach(a => bal[a] = 0);
+        let bal = {}; accounts.forEach(a => bal[a.name] = 0);
         transactions.forEach(tx => {
             tx.debits.forEach(d => { if(bal[d.account] !== undefined) bal[d.account] += d.amount; });
             tx.credits.forEach(c => { if(bal[c.account] !== undefined) bal[c.account] -= c.amount; });
@@ -363,10 +448,21 @@
 
     function loadReports() {
         let bal = calculateBalances();
-        let tbody = document.getElementById('reports-table').querySelector('tbody'); tbody.innerHTML = '';
-        for(let a in bal) {
-            tbody.innerHTML += `<tr><td>${a}</td><td style="font-weight:bold; color:${bal[a]>=0?'var(--success)':'var(--danger)'}">${bal[a].toFixed(2)}</td></tr>`;
-        }
+        let filterType = document.getElementById('report-type-filter').value;
+        let tbody = document.getElementById('reports-table').querySelector('tbody'); 
+        tbody.innerHTML = '';
+        
+        accounts.forEach(acc => {
+            if(filterType === "الكل" || acc.type === filterType) {
+                let currentBal = bal[acc.name] || 0;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${acc.name}</b></td>
+                        <td><span style="color:var(--gray)">${acc.type}</span></td>
+                        <td style="font-weight:bold; color:${currentBal>=0?'var(--success)':'var(--danger)'}">${currentBal.toFixed(2)}</td>
+                    </tr>`;
+            }
+        });
     }
 
     function loadStatement() {
@@ -396,23 +492,26 @@
         document.getElementById('statement-final-balance').innerText = running.toFixed(2);
     }
 
-    // === تصدير PDF الاحترافي عبر متصفح الجوال ===
+    // === تصدير PDF باسم شركة IMSG والتاريخ الميلادي مع تفعيل الإرسال الخلوي ===
     function exportToPDF() {
         let activeAcc = document.getElementById('statement-filter').value;
         let finalBal = document.getElementById('statement-final-balance').innerText;
         
-        // تعبئة بيانات الترويسة المخصصة للـ PDF
-        document.getElementById('pdf-acc-name').innerText = "الحساب المستهدف: " + activeAcc + " | الرصيد المتبقي: " + finalBal;
-        document.getElementById('pdf-date-print').innerText = "تاريخ استخراج التقرير: " + new Date().toLocaleDateString('ar-SA');
+        // إعداد التاريخ الميلادي الحالي بالصيغة القياسية الواضحة
+        let today = new Date();
+        let formattedDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
         
-        // استدعاء نافذة الطباعة والحفظ لـ PDF الخاصة بنظام تشغيل الهاتف
+        document.getElementById('pdf-acc-name').innerText = "كشف حركة حساب: " + activeAcc + " | صافي الرصيد النهائي المتبقي: " + finalBal;
+        document.getElementById('pdf-date-print').innerText = "تاريخ التصدير الميلادي: " + formattedDate;
+        
+        // تشغيل أمر حفظ كـ PDF والمشاركة المدمج تلقائياً في أنظمة الأندرويد والآيفون
         window.print();
     }
 
     // === نظام النسخ الاحتياطي المحمول ===
     function copyBackupCode() {
         let dataStr = btoa(unescape(encodeURIComponent(JSON.stringify({ accounts, transactions }))));
-        navigator.clipboard.writeText(dataStr).then(() => alert('تم نسخ كود النسخة الاحتياطية بنجاح! 📋 احفظه في نوتة جوالك.'));
+        navigator.clipboard.writeText(dataStr).then(() => alert('تم نسخ كود النسخة الاحتياطية لـ IMSG بنجاح! 📋 احفظه بأي محادثة أو مفكرة.'));
     }
 
     function processRestoreCode() {
@@ -422,9 +521,9 @@
             let decoded = JSON.parse(decodeURIComponent(escape(atob(code))));
             if(decoded.accounts && decoded.transactions) {
                 accounts = decoded.accounts; transactions = decoded.transactions;
-                saveToStorage(); alert('تم استرداد وتحديث البيانات بنجاح! 🎉'); location.reload();
+                saveToStorage(); alert('تم استرداد البيانات وتحديث النظام المالي لشركة IMSG بنجاح! 🎉'); location.reload();
             }
-        } catch(e) { alert('الكود غير صحيح!'); }
+        } catch(e) { alert('الكود المرفق غير صحيح!'); }
     }
 
     // إطلاق صفحة الإدخال بأسطر ابتدائية
