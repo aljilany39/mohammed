@@ -116,23 +116,22 @@
         </div>
     </div>
 
-    <!-- 2. شاشة دليل الحسابات المطور -->
+    <!-- 2. شاشة دليل الحسابات المطور (الأنواع الأربعة المحدثة) -->
     <div id="chart-tab" class="tab-content">
         <div class="card">
             <h3>إضافة / تعديل حساب</h3>
             <input type="hidden" id="edit-account-index" value="">
             <div class="form-group">
                 <label>اسم الحساب</label>
-                <input type="text" id="new-account-name" class="form-control" placeholder="مثال: الصندوق، العميل أحمد">
+                <input type="text" id="new-account-name" class="form-control" placeholder="مثال: صندوق المحل، العميل خالد">
             </div>
             <div class="form-group">
                 <label>نوع الحساب</label>
                 <select id="new-account-type" class="form-control">
-                    <option value="أصول">أصول (صندوق، بنك، عملاء)</option>
-                    <option value="خصوم">خصوم (موردين، قروض)</option>
-                    <option value="حقوق ملكية">حقوق ملكية (رأس المال)</option>
-                    <option value="إيرادات">إيرادات (مبيعات، أرباح)</option>
-                    <option value="مصروفات">مصروفات (إيجار، رواتب، مشتريات)</option>
+                    <option value="صناديق">صناديق</option>
+                    <option value="موردين">موردين</option>
+                    <option value="عملاء">عملاء</option>
+                    <option value="مصروفات">مصروفات</option>
                 </select>
             </div>
             <button id="btn-save-account" class="btn btn-success btn-block" onclick="createOrUpdateAccount()">حفظ الحساب ➕</button>
@@ -162,10 +161,9 @@
                 <label>تصفية الأرصدة حسب النوع:</label>
                 <select id="report-type-filter" class="form-control" onchange="loadReports()">
                     <option value="الكل">عرض كل أنواع الحسابات</option>
-                    <option value="أصول">أصول فقط</option>
-                    <option value="خصوم">خصوم فقط</option>
-                    <option value="حقوق ملكية">حقوق ملكية فقط</option>
-                    <option value="إيرادات">إيرادات فقط</option>
+                    <option value="صناديق">صناديق فقط</option>
+                    <option value="موردين">موردين فقط</option>
+                    <option value="عملاء">عملاء فقط</option>
                     <option value="مصروفات">مصروفات فقط</option>
                 </select>
             </div>
@@ -247,10 +245,11 @@
 </nav>
 
 <script>
+    // الحسابات الافتراضية متوافقة تماماً مع الأنواع الأربعة الجديدة
     let defaultAccounts = [
-        { name: "ابو محمد", type: "أصول" },
-        { name: "صندوق المركز الرئيسي", type: "أصول" },
-        { name: "المورد أحمد", type: "خصوم" },
+        { name: "العميل ابو محمد", type: "عملاء" },
+        { name: "صندوق المركز الرئيسي", type: "صناديق" },
+        { name: "المورد أحمد", type: "موردين" },
         { name: "مصروف الإيجار", type: "مصروفات" }
     ];
     
@@ -485,7 +484,6 @@
         return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     }
 
-    // === 1. تصدير كشف الحساب المالي تفصيلي PDF ===
     function exportToPDF() {
         let activeAcc = document.getElementById('statement-filter').value;
         let finalBal = document.getElementById('statement-final-balance').innerText;
@@ -496,7 +494,6 @@
         window.print();
     }
 
-    // === 2. تصدير ملخص الأرصدة والفلتر الحالي PDF ===
     function exportBalancesToPDF() {
         let filterType = document.getElementById('report-type-filter').value;
         document.getElementById('pdf-filter-status').innerText = "التصنيف المعروض: " + (filterType === "الكل" ? "كافة أنواع الحسابات المعتمدة" : filterType);
@@ -505,7 +502,6 @@
         window.print();
     }
 
-    // === نظام النسخ الاحتياطي المحمول ===
     function copyBackupCode() {
         let dataStr = btoa(unescape(encodeURIComponent(JSON.stringify({ accounts, transactions }))));
         navigator.clipboard.writeText(dataStr).then(() => alert('تم نسخ كود النسخة الاحتياطية لـ IMSG بنجاح! 📋'));
