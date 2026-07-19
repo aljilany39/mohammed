@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النظام المالي الاحترافي</title>
+    <style>
+        :root {
+            --primary: #1F4E79;
+            --success: #2E5B44;
+            --danger: #c0392b;
+            --bg: #f5f6fa;
+            --card: #ffffff;
+            --text: #2c3e50;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 70px; }
+        header { background-color: var(--primary); color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--card); padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card h3 { margin-bottom: 12px; border-bottom: 2px solid var(--bg); padding-bottom: 5px; color: var(--primary); }
+        
+        /* Form Styling */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-primary { background-color: var(--primary); }
+        .btn-success { background-color: var(--success); }
+        
+        /* Tabs Navigation */
+        .nav-tabs { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
+        .tab-link { flex: 1; text-align: center; padding: 12px 5px; font-size: 0.85rem; font-weight: bold; color: #7f8c8d; cursor: pointer; border: none; background: none; }
+        .tab-link.active { color: var(--primary); border-top: 3px solid var(--primary); background: #f9f9f9; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th, td { padding: 8px 5px; text-align: center; border: 1px solid #ddd; }
+        th { background-color: #f2f2f2; font-weight: bold; color: #333; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .balance-box { display: flex; justify-content: space-between; background: var(--bg); padding: 10px; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+        .text-green { color: var(--success); font-weight: bold; }
+        .text-red { color: var(--danger); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header id="app-title">إدخال العمليات اليومية</header>
+
+<div class="container">
+    
+    <!-- 1. شاشة الإدخال -->
+    <div id="input-tab" class="tab-content active">
+        <div class="card">
+            <h3>تسجيل حركة مالية جديدة</h3>
+            <div class="form-group">
+                <label>التاريخ</label>
+                <input type="date" id="tx-date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>البيان / الوصف</label>
+                <input type="text" id="tx-desc" class="form-control" placeholder="مثال: دفعة من الحساب">
+            </div>
+            <div class="form-group">
+                <label>المبلغ</label>
+                <input type="number" id="tx-amount" class="form-control" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>من حساب (المدين / الزيادة +)</label>
+                <select id="tx-from" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label>إلى حساب (الدائن / النقصان -)</label>
+                <select id="tx-to" class="form-control"></select>
+            </div>
+            <button class="btn btn-primary" onclick="addTransaction()">حفظ العملية 💾</button>
+        </div>
+    </div>
+
+    <!-- 2. شاشة دليل الحسابات -->
+    <div id="chart-tab" class="tab-content">
+        <div class="card">
+            <h3>إضافة حساب جديد</h3>
+            <div class="form-group">
+                <label>اسم الحساب (العميل/الصندوق/المورد)</label>
+                <input type="text" id="new-account-name" class="form-control" placeholder="مثال: ابو محمد">
+            </div>
+            <button class="btn btn-success" onclick="createAccount()">إضافة للحسابات ➕</button>
+        </div>
+        <div class="card">
+            <h3>قائمة الحسابات الحالية</h3>
+            <table id="accounts-table">
+                <thead><tr><th>اسم الحساب</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 3. شاشة الأرصدة والتقارير -->
+    <div id="report-tab" class="tab-content">
+        <div class="card">
+            <h3>ملخص أرصدة الحسابات</h3>
+            <table id="reports-table">
+                <thead>
+                    <tr>
+                        <th>الحساب</th>
+                        <th>الرصيد النهائي</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. شاشة كشف الحساب التفصيلي المطور (مدين، دائن، ورصيد تراكمي) -->
+    <div id="statement-tab" class="tab-content">
+        <div class="card">
+            <h3>كشف حساب تفصيلي حركي</h3>
+            <div class="form-group">
+                <label>اختر الحساب للمعاينة:</label>
+                <select id="statement-filter" class="form-control" onchange="loadStatement()"></select>
+            </div>
+            <div class="balance-box">
+                <span>صافي الرصيد الحالي:</span>
+                <span id="statement-final-balance">0.00</span>
+            </div>
+            <table id="statement-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>البيان</th>
+                        <th>مدين (+)</th>
+                        <th>دائن (-)</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- شريط التنقل السفلي -->
+<nav class="nav-tabs">
+    <button class="tab-link active" onclick="switchTab('input-tab', 'إدخال العمليات اليومية')">📥 إدخال</button>
+    <button class="tab-link" onclick="switchTab('chart-tab', 'دليل الحسابات')">🗂️ الدليل</button>
+    <button class="tab-link" onclick="switchTab('report-tab', 'تقارير الأرصدة')">📊 الأرصدة</button>
+    <button class="tab-link" onclick="switchTab('statement-tab', 'كشف الحساب التفصيلي')">🔍 كشف حساب</button>
+</nav>
+
+<script>
+    let defaultAccounts = ["ابو محمد", "صندوق المركز الرئيسي", "صندوق كاشير 1", "المورد أحمد"];
+    let accounts = JSON.parse(localStorage.getItem('fin_accounts')) || defaultAccounts;
+    let transactions = JSON.parse(localStorage.getItem('fin_transactions')) || [];
+
+    document.getElementById('tx-date').valueAsDate = new Date();
+
+    function saveToStorage() {
+        localStorage.setItem('fin_accounts', JSON.stringify(accounts));
+        localStorage.setItem('fin_transactions', JSON.stringify(transactions));
+        loadDropdowns();
+    }
+
+    function switchTab(tabId, title) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        document.getElementById('app-title').innerText = title;
+
+        if(tabId === 'chart-tab') loadChartOfAccounts();
+        if(tabId === 'report-tab') loadReports();
+        if(tabId === 'statement-tab') loadStatement();
+    }
+
+    function loadDropdowns() {
+        let dropdowns = ['tx-from', 'tx-to', 'statement-filter'];
+        dropdowns.forEach(id => {
+            let el = document.getElementById(id);
+            let currentVal = el.value;
+            el.innerHTML = '';
+            accounts.forEach(acc => {
+                let opt = document.createElement('option');
+                opt.value = acc; opt.innerText = acc;
+                el.appendChild(opt);
+            });
+            if(currentVal) el.value = currentVal;
+        });
+    }
+
+    function createAccount() {
+        let name = document.getElementById('new-account-name').value.trim();
+        if(!name) return alert('الرجاء كتابة اسم الحساب');
+        if(accounts.includes(name)) return alert('الحساب موجود مسبقاً');
+        accounts.push(name);
+        document.getElementById('new-account-name').value = '';
+        saveToStorage();
+        loadChartOfAccounts();
+    }
+
+    function loadChartOfAccounts() {
+        let tbody = document.getElementById('accounts-table').querySelector('tbody');
+        tbody.innerHTML = '';
+        accounts.forEach(acc => {
+            tbody.innerHTML += `<tr><td>${acc}</td></tr>`;
+        });
+    }
+
+    function addTransaction() {
+        let date = document.getElementById('tx-date').value;
+        let desc = document.getElementById('tx-desc').value.trim();
+        let amount = parseFloat(document.getElementById('tx-amount').value);
+        let fromAcc = document.getElementById('tx-from').value;
+        let toAcc = document.getElementById('tx-to').value;
+
+        if(!date || !desc || isNaN(amount) || !fromAcc || !toAcc) return alert('الرجاء إكمال كافة الحقول بطريقة صحيحة');
+        if(fromAcc === toAcc) return alert('لا يمكن أن يكون حساب الزيادة والنقصان متطابقين');
+
+        transactions.push({ date, desc, amount, fromAcc, toAcc });
+        document.getElementById('tx-desc').value = '';
+        document.getElementById('tx-amount').value = '';
+        saveToStorage();
+        alert('تم حفظ العملية بنجاح! ✅');
+    }
+
+    function calculateBalances() {
+        let balances = {};
+        accounts.forEach(acc => balances[acc] = 0);
+        transactions.forEach(tx => {
+            if(balances[tx.fromAcc] !== undefined) balances[tx.fromAcc] += tx.amount;
+            if(balances[tx.toAcc] !== undefined) balances[tx.toAcc] -= tx.amount;
+        });
+        return balances;
+    }
+
+    function loadReports() {
+        let balances = calculateBalances();
+        let tbody = document.getElementById('reports-table').querySelector('tbody');
+        tbody.innerHTML = '';
+        for(let acc in balances) {
+            tbody.innerHTML += `<tr><td>${acc}</td><td style="font-weight:bold; color:${balances[acc] >= 0 ? 'var(--success)':'var(--danger)'}">${balances[acc].toFixed(2)}</td></tr>`;
+        }
+    }
+
+    function loadStatement() {
+        let filterAcc = document.getElementById('statement-filter').value;
+        let tbody = document.getElementById('statement-table').querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        // فرز كل الحركات (سواء مدين أو دائن) المرتبطة بهذا الحساب وترتيبها حسب التاريخ
+        let filtered = transactions.filter(tx => tx.fromAcc === filterAcc || tx.toAcc === filterAcc);
+        
+        // ترتيب الحركات تاريخياً لضمان صحة الرصيد التراكمي
+        filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        let runningBalance = 0;
+
+        filtered.forEach(tx => {
+            let debit = "";
+            let credit = "";
+            
+            if (tx.fromAcc === filterAcc) {
+                debit = tx.amount;
+                runningBalance += tx.amount; // زيادة الرصيد (مدين)
+            } else if (tx.toAcc === filterAcc) {
+                credit = tx.amount;
+                runningBalance -= tx.amount; // نقص الرصيد (دائن)
+            }
+
+            let displayDebit = debit !== "" ? debit.toFixed(2) : "-";
+            let displayCredit = credit !== "" ? credit.toFixed(2) : "-";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${tx.date}</td>
+                    <td style="text-align:right;">${tx.desc}</td>
+                    <td class="text-green">${displayDebit}</td>
+                    <td class="text-red">${displayCredit}</td>
+                    <td style="font-weight:bold;">${runningBalance.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        document.getElementById('statement-final-balance').innerText = runningBalance.toFixed(2);
+        document.getElementById('statement-final-balance').style.color = runningBalance >= 0 ? 'var(--success)' : 'var(--danger)';
+
+        if(filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="color:#7f8c8d;">لا توجد عمليات مسجلة لهذا الحساب حتى الآن</td></tr>`;
+        }
+    }
+
+    // تشغيل القوائم تلقائياً عند فتح التطبيق
+    loadDropdowns();
+</script>
+
+</body>
+</html>
